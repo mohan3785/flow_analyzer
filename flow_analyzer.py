@@ -16,8 +16,10 @@ import time
 class flow_analyzer():
 
   def __init__(self):
-  #''' This construtor will instantiate argparser class and reads all options provided as command line arguments 
-  #'''
+    """ Flow Analyzer constructor.
+      
+    This construtor will instantiate argparser class and reads all options provided as command line arguments. 
+    """
     self.parser=argparse.ArgumentParser()
     self.parser.add_argument("-i", "--interface", type=str, help="Specify the name of the interface to capture flow", required=True)
     self.parser.add_argument("-c", "--count", type=int, help="Specify the number of packets to capture")
@@ -30,6 +32,10 @@ class flow_analyzer():
     self.args = self.parser.parse_args()
 
   def start_sniff(self):
+    """ Flow Sniffer module.
+      
+    This module will LiveCapture class and starts to capture packets. If timeout value is 0 then module will sniff continuously. 
+    """
 
     print("\nStarting packet capture:\n")
     self.packets = pyshark.LiveCapture(interface = self.args.interface)
@@ -48,7 +54,10 @@ class flow_analyzer():
 
   def show_capture(self, packet_index=0):
 
-    try :  
+    try : 
+      if len(self.packets) is 0:
+        print("\nFails to capture packets")
+        raise Exception('No Packets received on the sniffing interface') 
       print("\nCaptured packets are : \n")
       if self.args.timeout != 0 :
         self.packets[packet_index].show()
@@ -66,6 +75,10 @@ class flow_analyzer():
 
 
 if __name__ == '__main__' :
+  """ Flow Analyzer Main block.
+      
+  Entire module flow defined in this block. 
+  """
 
   print("\nSniffing interface is : %s" % (sys.argv[1]))
   print("\nStarted at  : %s" % (str(time.localtime())))
