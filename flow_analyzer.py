@@ -4,6 +4,9 @@ import sys
 import pyshark
 import argparse
 import time
+import packet_parser
+import pprint
+import mongod_db
 
 # Inorder to run this module please have following things running
 # 1. python3 ==> Python3 should be installed
@@ -61,38 +64,67 @@ class flow_analyzer():
       print("\nCaptured packets are : \n")
       if self.args.timeout != 0 :
         self.packets[packet_index].show()
+        pkt = packet_parser.packet_to_json(self.packets[packet_index])
+        print("Packet in JSON format")
+        pprint.pprint(pkt)
       else :
         print(str(self.packets[packet_index]))
 
     except Exception as error :
       print("\nCaught exception {}".format(error))
 
-#  def save_flow_info_to_db(self):
+  def save_flow_info_to_db(self, db):
 
-     
+    index = 1
+    pkts = list()
+    try:
+      for packet in self.packets:
+        if index == len(self.packets):
+          break
+        pkt = packet_parser.packet_to_json(packet)
+        #pkts[str(index)] = pkt
+        pkts.append(pkt)
+        print("Packet in JSON format")
+        print(pkts)
+        index = index+1
+
+    except Exception as error :
+      print("\nCaught exception {}".format(error))
+
+    db.insert_to_db(pkts)
+    pkts.clear()
   
 #  def read_flow_info_from_db(self):
 
 
 if __name__ == '__main__' :
+
   """ Flow Analyzer Main block.
       
   Entire module flow defined in this block. 
   """
 
-  print("\nSniffing interface is : %s" % (sys.argv[1]))
-  print("\nStarted at  : %s" % (str(time.localtime())))
-  
+  start = time.localtime()
+  col_name = "packets_"+time.strftime("%Y%m%d_%H%M%S", start)
+  print(col_name) 
   # Instantiating flow_analyzer class 
   fs = flow_analyzer()
+  start = time.localtime()
+  print("\nStarted at  : %s" % time.strftime("%Y%m%d_%H%M%S", start))
+
   # Starts sniffing on the given interface for given interval
   fs.start_sniff()
   # Displays captured packets
-  fs.show_capture()
+  #fs.show_capture()
+
+  db = mongod_db.dbase(collections=col_name)
+  db.connect_to_db()
+  fs.save_flow_info_to_db(db)
   print("\n10th packet is:\n")
-  fs.show_capture(5)
-  print("\nStopped at  : %s" % (str(time.localtime())))
- 
+  #fs.show_capture(5)
+  stop = time.localtime()
+  print("\nStopped at  : %s" % time.strftime("%Y%m%d_%H%M%S", stop))
+  db.close_db_con() 
  
 
 
