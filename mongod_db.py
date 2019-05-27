@@ -5,10 +5,14 @@ class dbase():
     #Class Attributes
     client = MongoClient()
 
-    def __init__(self):
+    def __init__(self, database="pkt_captures", collections="pkts"):
+        """ MongoDB constructor.
+
+        This construtor will gets database name and collections name from the provided arguments.
+        """
         # Instance Attributes
-        self.db_name = "pkt_captures"
-        self.col_name = "pkts"
+        self.db_name = database
+        self.col_name = collections
 
     def connect_to_db(self):
         # Method creates a handle to Database and collection
@@ -17,7 +21,8 @@ class dbase():
         self.pkts = self.dbase[self.col_name]
    
     def insert_to_db(self,packet):
-        results = self.pkts.insert_many(packet)   
+        #results = self.pkts.insert_one(packet, bypass_document_validation=False)   
+        results = self.pkts.insert_many(packet, bypass_document_validation=False)   
         for db_id in  results.inserted_ids:
             print('Data is written with id' + str(db_id))
         
@@ -28,26 +33,5 @@ class dbase():
 
         self.client.close()
 
-if __name__ == "__main__":
-    db = dbase()
-    db.connect_to_db()
-    packet = [
-      {
-        'l2_src_port' : '800',       
-        'l2_dst_port' : '80',
-        'l2_proto' : 'tcp',
-        'l3_src_ip' : '20.20.20.1',
-        'l3_dst_ip' : '40.40.40.1'
-      },
-      {
-        'l2_src_port' : '1800',
-        'l2_dst_port' : '21',
-        'l2_proto' : 'udp',
-        'l3_src_ip' : '120.120.120.1',
-        'l3_dst_ip' : '140.140.140.1'
-      },
-    ]
-    db.insert_to_db(packet)
-    db.close_db_con()
 
 
