@@ -21,7 +21,6 @@ class dbase():
         self.pkts = self.dbase[self.col_name]
    
     def insert_to_db(self,packet):
-        #results = self.pkts.insert_many(packet)   
         #results = self.pkts.insert_one(packet, bypass_document_validation=False)   
         results = self.pkts.insert_many(packet, bypass_document_validation=False)   
         for db_id in  results.inserted_ids:
